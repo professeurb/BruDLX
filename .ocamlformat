@@ -1,0 +1,4 @@
+exp-grouping = preserve
+let-and = sparse
+margin = 60
+wrap-comments = false
