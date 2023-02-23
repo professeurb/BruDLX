@@ -42,8 +42,7 @@ let triangle n =
     done
   done;
   let _ = Dlx.compile dlx in
-  true
-(* Dlx.has_solution dlx *)
+  Dlx.has_solution dlx
 ;;
 
 for i = 1 to 12 do

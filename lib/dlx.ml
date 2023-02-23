@@ -145,10 +145,21 @@ let rec uncover_left tab row pos =
 (*   Printf.printf "Row :"; *)
 (*   aux1 tab.(0 + right) *)
 
+let rec select_col tab cand card next =
+  if next = 0 then cand
+  else
+    let new_card = tab.(next + data) in
+    if new_card < card then
+      select_col tab next new_card tab.(next + right)
+    else select_col tab cand card tab.(next + right)
+
 let rec forward tab =
   (* print_endline "forward"; *)
   let col = tab.(0 + right) in
   if col <> 0 then
+    let col =
+      select_col tab col tab.(col + data) tab.(col + right)
+    in
     let row = tab.(col + down) in
     if row = col then backward tab
     else begin
