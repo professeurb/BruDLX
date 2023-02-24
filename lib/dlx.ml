@@ -1,3 +1,24 @@
+(* external prout : *)
+(*   ( int32, *)
+(*     Bigarray.int32_elt, *)
+(*     Bigarray.c_layout ) *)
+(*   Bigarray.Array1.t -> *)
+(*   unit = "prout" *)
+
+external forward_c :
+  ( int32,
+    Bigarray.int32_elt,
+    Bigarray.c_layout )
+  Bigarray.Array1.t ->
+  unit = "forward"
+
+external backward_c :
+  ( int32,
+    Bigarray.int32_elt,
+    Bigarray.c_layout )
+  Bigarray.Array1.t ->
+  unit = "backward"
+
 (* type 'a cmp = int array *)
 
 let left = 0
@@ -13,12 +34,26 @@ let insert_horiz tab l i =
   tab.(r + left) <- i;
   tab.(i + right) <- r
 
+let insert_horiz_big tab l i =
+  let r = tab.{l + right} |> Int32.to_int in
+  tab.{l + right} <- i |> Int32.of_int;
+  tab.{i + left} <- l |> Int32.of_int;
+  tab.{r + left} <- i |> Int32.of_int;
+  tab.{i + right} <- r |> Int32.of_int
+
 let insert_vert tab u i =
   let d = tab.(u + down) in
   tab.(u + down) <- i;
   tab.(i + up) <- u;
   tab.(i + down) <- d;
   tab.(d + up) <- i
+
+let insert_vert_big tab u i =
+  let d = tab.{u + down} |> Int32.to_int in
+  tab.{u + down} <- i |> Int32.of_int;
+  tab.{i + up} <- u |> Int32.of_int;
+  tab.{i + down} <- d |> Int32.of_int;
+  tab.{d + up} <- i |> Int32.of_int
 
 (* let hide_horiz tab i = *)
 (*   let l = tab.(i + left) *)
@@ -37,8 +72,8 @@ let insert_vert tab u i =
 let hide_vert tab i =
   let above = tab.(i + up)
   and below = tab.(i + down) in
-  assert (tab.(above + down) = i);
-  assert (tab.(below + up) = i);
+  (* assert (tab.(above + down) = i); *)
+  (* assert (tab.(below + up) = i); *)
   tab.(above + down) <- below;
   tab.(below + up) <- above
 
@@ -49,6 +84,10 @@ let restore_vert tab i =
   tab.(below + up) <- i
 
 let incr_point tab i = tab.(i + data) <- tab.(i + data) + 1
+
+let incr_point_big tab i =
+  tab.{i + data} <- Int32.succ tab.{i + data}
+
 let decr_point tab i = tab.(i + data) <- tab.(i + data) - 1
 
 let rec cover_col_aux2 tab row pos =
@@ -72,7 +111,7 @@ let cover_column tab col =
   cover_col_aux1 tab col tab.(col + down)
 
 let cover_column_weird tab col =
-  assert (tab.(col + down) <> col);
+  (* assert (tab.(col + down) <> col); *)
   let l = tab.(col + left)
   and r = tab.(col + right) in
   tab.(l + right) <- r;
@@ -80,14 +119,14 @@ let cover_column_weird tab col =
   let prev = tab.(0 + down) in
   tab.(col + right) <- prev;
   tab.(0 + down) <- col;
-  assert (tab.(col + down) <> col);
+  (* assert (tab.(col + down) <> col); *)
   cover_col_aux1 tab col tab.(col + down)
 
 let rec uncover_col_aux2 tab row pos =
   if pos <> row then begin
     restore_vert tab pos;
     incr_point tab tab.(pos + data);
-    uncover_col_aux2 tab row tab.(pos)
+    uncover_col_aux2 tab row tab.(pos + left)
   end
 
 let rec uncover_col_aux1 tab col pos =
@@ -112,7 +151,7 @@ let uncover_column tab col =
 
 let uncover_column_weird tab =
   let col = tab.(0 + down) in
-  assert (col <> 0);
+  (* assert (col <> 0); *)
   tab.(0 + down) <- tab.(col + right);
   uncover_col_aux1_weird tab col tab.(col + up);
   let l = tab.(col + left) in
@@ -123,14 +162,14 @@ let uncover_column_weird tab =
 
 let rec cover_right tab row pos =
   if pos <> row then begin
-    cover_column tab tab.(pos + 4);
-    cover_right tab row tab.(pos + 1)
+    cover_column tab tab.(pos + data);
+    cover_right tab row tab.(pos + right)
   end
 
 let rec uncover_left tab row pos =
   if pos <> row then begin
-    uncover_column tab tab.(pos + 4);
-    uncover_left tab row tab.(pos)
+    uncover_column tab tab.(pos + data);
+    uncover_left tab row tab.(pos + left)
   end
 
 (* let print_info tab = *)
@@ -253,6 +292,38 @@ let compile : 'a t -> int array =
     t.shape_tbl;
   arr
 
+let compile_bigarray :
+    'a t ->
+    ( int32,
+      Bigarray.int32_elt,
+      Bigarray.c_layout )
+    Bigarray.Array1.t =
+ fun t ->
+  let arr =
+    Bigarray.Array1.init Int32 Bigarray.c_layout t.counter
+      (fun i -> i / 5 * 5 |> Int32.of_int)
+  in
+  Hashtbl.iter
+    (fun _ (is_primary, pos) ->
+      arr.{pos + data} <- Int32.zero;
+      if is_primary then insert_horiz_big arr 0 pos)
+    t.item_tbl;
+  Hashtbl.iter
+    (fun pos item_list ->
+      let curr_pos = ref pos in
+      List.iter
+        (fun item ->
+          let _, item_pos = Hashtbl.find t.item_tbl item in
+          if !curr_pos <> pos then
+            insert_horiz_big arr pos !curr_pos;
+          insert_vert_big arr item_pos !curr_pos;
+          incr_point_big arr item_pos;
+          arr.{!curr_pos + data} <- item_pos |> Int32.of_int;
+          curr_pos := 5 + !curr_pos)
+        item_list)
+    t.shape_tbl;
+  arr
+
 let has_solution_comp arr =
   forward arr;
   arr.(0 + down) <> 0
@@ -270,5 +341,15 @@ let count_solutions pb =
     assert (arr.(0 + right) = 0);
     incr cnt;
     backward arr
+  done;
+  !cnt
+
+let count_solutions_c pb =
+  let arr = compile_bigarray pb
+  and cnt = ref 0 in
+  forward_c arr;
+  while arr.{0 + down} <> Int32.zero do
+    incr cnt;
+    backward_c arr
   done;
   !cnt
