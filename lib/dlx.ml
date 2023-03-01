@@ -20,20 +20,6 @@ let insert_vert tab u i =
   tab.(i + down) <- d;
   tab.(d + up) <- i
 
-(* let hide_horiz tab i = *)
-(*   let l = tab.(i + left) *)
-(*   and r = tab.(i + right) in *)
-(*   assert (tab.(l + 1) = i); *)
-(*   assert (tab.(r) = i); *)
-(*   tab.(l + right) <- r; *)
-(*   tab.(r + left) <- l *)
-
-(* let restore_horiz tab i = *)
-(*   let l = tab.(i + left) *)
-(*   and r = tab.(i + right) in *)
-(*   tab.(l + right) <- i; *)
-(*   tab.(r + left) <- i *)
-
 let hide_vert tab i =
   let above = tab.(i + up)
   and below = tab.(i + down) in
@@ -154,7 +140,6 @@ let rec select_col tab cand card next =
     else select_col tab cand card tab.(next + right)
 
 let rec forward tab =
-  (* print_endline "forward"; *)
   let col = tab.(0 + right) in
   if col <> 0 then
     let col =
@@ -164,14 +149,11 @@ let rec forward tab =
     if row = col then backward tab
     else begin
       cover_column_weird tab col;
-      (* print_info tab; *)
       cover_right tab row tab.(row + right);
       forward tab
     end
 
 and backward tab =
-  (* print_endline "backward"; *)
-  (* print_info tab; *)
   let col = tab.(0 + down) in
   if col <> 0 then begin
     let row = tab.(col + down) in
@@ -272,3 +254,55 @@ let count_solutions pb =
     backward arr
   done;
   !cnt
+
+let rec get_shape pb arr pos =
+  match Hashtbl.find_opt pb.shape_tbl pos with
+  | None -> get_shape pb arr arr.(pos + right)
+  | Some s -> s
+
+let build_solution pb arr =
+  if arr.(0 + down) = 0 then None
+  else begin
+    let rec aux pos =
+      if pos = 0 then []
+      else
+        get_shape pb arr arr.(pos + down)
+        :: aux arr.(pos + right)
+    in
+    Some (aux arr.(0 + down))
+  end
+
+let first_solution pb =
+  let arr = compile pb in
+  forward arr;
+  build_solution pb arr
+
+let iter_solutions f pb =
+  let arr = compile pb in
+  forward arr;
+  let rec aux () =
+    match build_solution pb arr with
+    | None -> ()
+    | Some sol ->
+        f sol;
+        aux ()
+  in
+  aux ()
+
+let generate_solutions pb =
+  let arr = compile pb in
+  let has_started = ref false
+  and is_done = ref false in
+  fun () ->
+    if !is_done then None
+    else begin
+      if !has_started then backward arr
+      else (
+        has_started := true;
+        forward arr);
+      match build_solution pb arr with
+      | None ->
+          is_done := true;
+          None
+      | s -> s
+    end
