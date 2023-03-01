@@ -289,7 +289,7 @@ let iter_solutions f pb =
   in
   aux ()
 
-let generate_solutions pb =
+let solution_dispenser pb =
   let arr = compile pb in
   let has_started = ref false
   and is_done = ref false in

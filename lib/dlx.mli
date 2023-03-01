@@ -10,6 +10,6 @@ val has_solution : 'a t -> bool
 val count_solutions : 'a t -> int
 val first_solution : 'a t -> 'a list list option
 val iter_solutions : ('a list list -> unit) -> 'a t -> unit
-val generate_solutions : 'a t -> unit -> 'a list list option
+val solution_dispenser : 'a t -> unit -> 'a list list option
 val forward : int array -> unit
 val backward : int array -> unit
