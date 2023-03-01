@@ -42,13 +42,12 @@ let triangle n =
     done
   done;
   let _ = Dlx.compile dlx in
-  Dlx.has_solution dlx
+  Dlx.count_solutions_c dlx
 ;;
 
-for i = 1 to 12 do
+for i = 1 to 21 do
   if i mod 3 <> 1 then
-    Printf.printf "%2d: %c\n" i
-      (if triangle i then '+' else '.')
+    Printf.printf "%2d: %d\n" i (triangle i)
 done
 
 (*

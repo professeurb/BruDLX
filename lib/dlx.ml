@@ -55,25 +55,9 @@ let insert_vert_big tab u i =
   tab.{i + down} <- d |> Int32.of_int;
   tab.{d + up} <- i |> Int32.of_int
 
-(* let hide_horiz tab i = *)
-(*   let l = tab.(i + left) *)
-(*   and r = tab.(i + right) in *)
-(*   assert (tab.(l + 1) = i); *)
-(*   assert (tab.(r) = i); *)
-(*   tab.(l + right) <- r; *)
-(*   tab.(r + left) <- l *)
-
-(* let restore_horiz tab i = *)
-(*   let l = tab.(i + left) *)
-(*   and r = tab.(i + right) in *)
-(*   tab.(l + right) <- i; *)
-(*   tab.(r + left) <- i *)
-
 let hide_vert tab i =
   let above = tab.(i + up)
   and below = tab.(i + down) in
-  (* assert (tab.(above + down) = i); *)
-  (* assert (tab.(below + up) = i); *)
   tab.(above + down) <- below;
   tab.(below + up) <- above
 
@@ -111,7 +95,6 @@ let cover_column tab col =
   cover_col_aux1 tab col tab.(col + down)
 
 let cover_column_weird tab col =
-  (* assert (tab.(col + down) <> col); *)
   let l = tab.(col + left)
   and r = tab.(col + right) in
   tab.(l + right) <- r;
@@ -119,7 +102,6 @@ let cover_column_weird tab col =
   let prev = tab.(0 + down) in
   tab.(col + right) <- prev;
   tab.(0 + down) <- col;
-  (* assert (tab.(col + down) <> col); *)
   cover_col_aux1 tab col tab.(col + down)
 
 let rec uncover_col_aux2 tab row pos =

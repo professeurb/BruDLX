@@ -9,7 +9,7 @@
 #define down 3
 #define datum 4
 
-inline void insert_horiz(int32_t *arr, int32_t l, int32_t i) {
+void insert_horiz(int32_t *arr, int32_t l, int32_t i) {
   int32_t r = arr[l + right];
   arr[l + right] = i;
   arr[i + left] = l;
@@ -39,7 +39,8 @@ void restore_vert(int32_t *arr, int32_t i) {
   arr[below + up] = i;
 }
 
-void cover_col_aux2(int32_t *arr, int32_t row, int32_t pos) {
+void cover_col_aux2(int32_t *arr, int32_t row) {
+  int32_t pos = arr[row + right];
   while (pos != row) {
     hide_vert(arr, pos);
     arr[arr[pos + datum] + datum] -= 1;
@@ -47,9 +48,11 @@ void cover_col_aux2(int32_t *arr, int32_t row, int32_t pos) {
   }
 }
 
-void cover_col_aux1(int32_t *arr, int32_t col, int32_t row) {
+void cover_col_aux1(int32_t *arr, int32_t col) {
+  int32_t row = arr[col + down];
   while (row != col) {
-    cover_col_aux2(arr, row, arr[row + right]);
+    int32_t pos = arr[row + right];
+    cover_col_aux2(arr, row);
     row = arr[row + down];
   }
 }
@@ -59,7 +62,7 @@ void cover_column(int32_t *arr, int32_t col) {
   int32_t r = arr[col + right];
   arr[l + right] = r;
   arr[r + left] = l;
-  cover_col_aux1(arr, col, arr[col + down]);
+  cover_col_aux1(arr, col);
 }
 
 void cover_column_weird(int32_t *arr, int32_t col) {
@@ -69,10 +72,11 @@ void cover_column_weird(int32_t *arr, int32_t col) {
   arr[r + left] = l;
   arr[col + right] = arr[0 + down];
   arr[0 + down] = col;
-  cover_col_aux1(arr, col, arr[col + down]);
+  cover_col_aux1(arr, col);
 }
 
-void uncover_col_aux2(int32_t *arr, int32_t row, int32_t pos) {
+void uncover_col_aux2(int32_t *arr, int32_t row) {
+  int32_t pos = arr[row + left];
   while (pos != row) {
     restore_vert(arr, pos);
     arr[arr[pos + datum] + datum] += 1;
@@ -82,14 +86,16 @@ void uncover_col_aux2(int32_t *arr, int32_t row, int32_t pos) {
 
 void uncover_col_aux1(int32_t *arr, int32_t col, int32_t row) {
   while (row != col) {
-    uncover_col_aux2(arr, row, arr[row + left]);
+    int32_t pos = arr[row + left];
+    uncover_col_aux2(arr, row);
     row = arr[row + up];
   }
 }
 
-void uncover_col_aux1_weird(int32_t *arr, int32_t col, int32_t row) {
+void uncover_col_aux1_weird(int32_t *arr, int32_t col) {
+  int32_t row = arr[col + up];
   while (true) {
-    uncover_col_aux2(arr, row, arr[row + left]);
+    uncover_col_aux2(arr, row);
     int32_t next = arr[row + up];
     if (next == col) {
       arr[col + down] = row;
@@ -109,8 +115,9 @@ void uncover_column(int32_t *arr, int32_t col) {
 
 void uncover_column_weird(int32_t *arr) {
   int32_t col = arr[0 + down];
+  int32_t row = arr[col + up];
   arr[0 + down] = arr[col + right];
-  uncover_col_aux1_weird(arr, col, arr[col + up]);
+  uncover_col_aux1_weird(arr, col);
   int32_t l = arr[col + left];
   int32_t r = arr[l + right];
   arr[l + right] = col;
@@ -118,14 +125,16 @@ void uncover_column_weird(int32_t *arr) {
   arr[col + right] = r;
 }
 
-void cover_right(int32_t *arr, int32_t row, int32_t pos) {
+void cover_right(int32_t *arr, int32_t row) {
+  int32_t pos = arr[row + right];
   while (pos != row) {
     cover_column(arr, arr[pos + datum]);
     pos = arr[pos + right];
   }
 }
 
-void uncover_left(int32_t *arr, int32_t row, int32_t pos) {
+void uncover_left(int32_t *arr, int32_t row) {
+  int32_t pos = arr[row + left];
   while (pos != row) {
     uncover_column(arr, arr[pos + datum]);
     pos = arr[pos + left];
@@ -153,7 +162,7 @@ void _forward(int32_t *arr) {
     else {
       int32_t row = arr[col + down];
       cover_column_weird(arr, col);
-      cover_right(arr, row, arr[row + right]);
+      cover_right(arr, row);
       _forward(arr);
     }
   }
@@ -163,11 +172,11 @@ void _backward(int32_t *arr) {
   int32_t col = arr[0 + down];
   if (col != 0) {
     int32_t row = arr[col + down];
-    uncover_left(arr, row, arr[row + left]);
+    uncover_left(arr, row);
     row = arr[row + down];
     if (row != col) {
       arr[col + down] = row;
-      cover_right(arr, row, arr[row + right]);
+      cover_right(arr, row);
       _forward(arr);
     } else {
       uncover_column_weird(arr);
@@ -176,28 +185,71 @@ void _backward(int32_t *arr) {
   }
 }
 
+void _mix(int32_t *arr, bool forward) {
+  int32_t col, row;
+
+  if (forward)
+    goto forward;
+
+backward:
+  col = arr[0 + down];
+
+  if (col == 0)
+    return;
+  row = arr[col + down];
+  uncover_left(arr, row);
+  row = arr[row + down]; // next row
+
+  // if (row != col) {
+  //   arr[col + down] = row;
+  //   cover_right(arr, row);
+  //   goto forward;
+  // } else {
+  //   uncover_column_weird(arr);
+  //   goto backward;
+  // }
+
+  if (row == col) {
+    uncover_column_weird(arr);
+    goto backward;
+  }
+  arr[col + down] = row;
+  cover_right(arr, row);
+  // goto forward;
+
+forward:
+  col = arr[0 + right];
+
+  if (col == 0)
+    return;
+  int32_t card = arr[col + datum];
+  int32_t cand = arr[col + right];
+  while (cand != 0) {
+    int32_t new_card = arr[cand + datum];
+    if (new_card < card) {
+      col = cand;
+      card = new_card;
+    }
+    cand = arr[cand + right];
+  }
+  if (card == 0)
+    goto backward;
+  cover_column_weird(arr, col);
+  row = arr[col + down];
+  cover_right(arr, row);
+  goto forward;
+}
+
 CAMLprim value forward(value bigarray) {
   int32_t *arr = Caml_ba_data_val(bigarray);
-  _forward(arr);
+  // _forward(arr);
+  _mix(arr, true);
   return Val_unit;
 }
 
 CAMLprim value backward(value bigarray) {
   int32_t *arr = Caml_ba_data_val(bigarray);
-  _backward(arr);
+  // _backward(arr);
+  _mix(arr, false);
   return Val_unit;
 }
-
-/*
-
-CAMLprim value prout(value bigarray) {
-  int32_t *arr = Caml_ba_data_val(bigarray);
-  int32_t i, s = Caml_ba_array_val(bigarray)->dim[0];
-
-  for (i = 1; i < s; ++i)
-    arr[0] += arr[i];
-
-  return Val_unit;
-}
-
-*/
