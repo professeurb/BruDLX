@@ -51,16 +51,16 @@ let restore_vert tab i =
   tab.(below + up) <- i
 
 let incr_point tab pos =
-  (* tab.(pos + data) <- tab.(tab.(pos + data) + down); *)
-  (* assert (tab.(pos + data) <> 0); *)
+  tab.(pos + data) <- tab.(tab.(pos + data) + down);
+  assert (tab.(pos + data) <> 0);
   if tab.(pos + right) <> pos then begin
     hide_horiz tab pos;
     insert_right tab tab.(pos + data) pos
   end
 
 let decr_point tab pos =
-  (* tab.(pos + data) <- tab.(tab.(pos + data) + up); *)
-  (* assert (tab.(pos + data) <> 0); *)
+  assert (tab.(pos + data) <> 0);
+  tab.(pos + data) <- tab.(tab.(pos + data) + up);
   if tab.(pos + right) <> pos then begin
     hide_horiz tab pos;
     insert_right tab tab.(pos + data) pos
@@ -88,7 +88,6 @@ let cover_column tab col =
   cover_col_aux1 tab col tab.(col + down)
 
 let select_column tab col =
-  assert (tab.(col + down) <> col);
   let l = tab.(col + left)
   and r = tab.(col + right) in
   tab.(l + right) <- r;
@@ -96,7 +95,6 @@ let select_column tab col =
   let prev = tab.(0 + data) in
   tab.(col + right) <- prev;
   tab.(0 + data) <- col;
-  assert (tab.(col + down) <> col);
   cover_col_aux1 tab col tab.(col + down)
 
 let rec uncover_col_aux2 tab row pos =
@@ -124,12 +122,15 @@ let uncover_column tab col =
   (* let r = tab.(col + right) in *)
   (* tab.(l + right) <- col; *)
   (* tab.(r + left) <- col *)
+  assert (tab.(col + right) = col);
   insert_right tab tab.(col + data) col
 
 let deselect_column tab =
   let col = tab.(0 + data) in
   assert (col <> 0);
+  assert (tab.(col + right) <> col);
   tab.(0 + data) <- tab.(col + right);
+  assert (tab.(col + up) <> col);
   deselect_col_aux1 tab col tab.(col + up);
   (* let l = tab.(col + left) in *)
   (* let r = tab.(l + right) in *)
@@ -140,14 +141,14 @@ let deselect_column tab =
 
 let rec cover_right tab row pos =
   if pos <> row then begin
-    cover_column tab tab.(pos + 4);
-    cover_right tab row tab.(pos + 1)
+    cover_column tab tab.(pos + data);
+    cover_right tab row tab.(pos + right)
   end
 
 let rec uncover_left tab row pos =
   if pos <> row then begin
-    uncover_column tab tab.(pos + 4);
-    uncover_left tab row tab.(pos)
+    uncover_column tab tab.(pos + data);
+    uncover_left tab row tab.(pos + left)
   end
 
 (* let print_info tab = *)
@@ -162,27 +163,39 @@ let rec uncover_left tab row pos =
 (*   Printf.printf "Row :"; *)
 (*   aux1 tab.(0 + right) *)
 
-let rec choose_col tab cand card next =
-  if next = 0 then cand
-  else
-    let new_card = tab.(next + data) in
-    if new_card < card then
-      choose_col tab next new_card tab.(next + right)
-    else choose_col tab cand card tab.(next + right)
+(* let print_array arr = *)
+(*   let n = Array.length arr / cell_size in *)
+(*   for i = 0 to n - 1 do *)
+(*     Printf.printf "%4d: %4d %4d %4d %4d %4d\n" (5 * i) *)
+(*       arr.(5 * i) *)
+(*       arr.((5 * i) + 1) *)
+(*       arr.((5 * i) + 2) *)
+(*       arr.((5 * i) + 3) *)
+(*       arr.((5 * i) + 4) *)
+(*   done *)
+
+let choose_col tab =
+  let rec aux pos =
+    let cand = tab.(pos + right) in
+    if cand <> pos then Some cand
+    else
+      let next = tab.(pos + down) in
+      if next = 0 then None else aux next
+  in
+  aux 0
 
 let rec forward tab =
-  let col = tab.(0 + right) in
-  if col <> 0 then
-    let col =
-      choose_col tab col tab.(col + data) tab.(col + right)
-    in
-    let row = tab.(col + down) in
-    if row = col then backward tab
-    else begin
-      select_column tab col;
-      cover_right tab row tab.(row + right);
-      forward tab
-    end
+  match choose_col tab with
+  | None -> ()
+  | Some col ->
+      (* Printf.printf "Selecting %d\n" col; *)
+      let row = tab.(col + down) in
+      if row = col then backward tab
+      else begin
+        select_column tab col;
+        cover_right tab row tab.(row + right);
+        forward tab
+      end
 
 and backward tab =
   let col = tab.(0 + data) in
@@ -196,6 +209,7 @@ and backward tab =
       forward tab
     end
     else begin
+      (* Printf.printf "Deselecting %d\n" col; *)
       deselect_column tab;
       backward tab
     end
