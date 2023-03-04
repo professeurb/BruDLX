@@ -1,4 +1,4 @@
-open Brudlx
+open Brudlx2
 
 (* let pre_triangle n = *)
 (*   let dlx = Dlx.init () in *)
@@ -74,7 +74,8 @@ let _ =
     List.map
       (fun x -> langford x |> Dlx.count_solutions)
       (range 1 10)
-    = [ 0; 0; 2; 2; 0; 0; 52; 300; 0; 0 ])
+    = [ 0; 0; 2; 2; 0; 0; 52; 300; 0; 0 ]);
+  print_endline "Ok."
 
 (* let sol n = *)
 (*   match langford n |> Dlx.first_solution with *)

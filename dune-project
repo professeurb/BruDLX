@@ -1,6 +1,6 @@
 (lang dune 3.6)
 
-(name brudlx)
+(name brudlx2)
 
 (generate_opam_files true)
 
@@ -16,7 +16,7 @@
 ; (documentation https://url/to/documentation)
 
 (package
- (name brudlx)
+ (name brudlx2)
  (synopsis "A short synopsis")
  (description "A longer description")
  (depends ocaml dune)

@@ -1,5 +1,5 @@
 (library
- (name brudlx)
- (public_name brudlx)
+ (name brudlx2)
+ (public_name brudlx2)
  (ocamlopt_flags :standard -O3)
  )
