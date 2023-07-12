@@ -1,23 +1,37 @@
-(* external prout : *)
-(*   ( int32, *)
-(*     Bigarray.int32_elt, *)
-(*     Bigarray.c_layout ) *)
-(*   Bigarray.Array1.t -> *)
-(*   unit = "prout" *)
-
 external forward_c :
-  ( int32,
-    Bigarray.int32_elt,
+  ( int64,
+    Bigarray.int64_elt,
     Bigarray.c_layout )
   Bigarray.Array1.t ->
   unit = "forward"
 
 external backward_c :
-  ( int32,
-    Bigarray.int32_elt,
+  ( int64,
+    Bigarray.int64_elt,
     Bigarray.c_layout )
   Bigarray.Array1.t ->
   unit = "backward"
+
+external forward2_c :
+  ( int64,
+    Bigarray.int64_elt,
+    Bigarray.c_layout )
+  Bigarray.Array1.t ->
+  unit = "forward2"
+
+external backward2_c :
+  ( int64,
+    Bigarray.int64_elt,
+    Bigarray.c_layout )
+  Bigarray.Array1.t ->
+  unit = "backward2"
+
+external prepare2_c :
+  ( int64,
+    Bigarray.int64_elt,
+    Bigarray.c_layout )
+  Bigarray.Array1.t ->
+  unit = "prepare2"
 
 (* type 'a cmp = int array *)
 
@@ -35,11 +49,11 @@ let insert_horiz tab l i =
   tab.(i + right) <- r
 
 let insert_horiz_big tab l i =
-  let r = tab.{l + right} |> Int32.to_int in
-  tab.{l + right} <- i |> Int32.of_int;
-  tab.{i + left} <- l |> Int32.of_int;
-  tab.{r + left} <- i |> Int32.of_int;
-  tab.{i + right} <- r |> Int32.of_int
+  let r = tab.{l + right} |> Int64.to_int in
+  tab.{l + right} <- i |> Int64.of_int;
+  tab.{i + left} <- l |> Int64.of_int;
+  tab.{r + left} <- i |> Int64.of_int;
+  tab.{i + right} <- r |> Int64.of_int
 
 let insert_vert tab u i =
   let d = tab.(u + down) in
@@ -49,11 +63,11 @@ let insert_vert tab u i =
   tab.(d + up) <- i
 
 let insert_vert_big tab u i =
-  let d = tab.{u + down} |> Int32.to_int in
-  tab.{u + down} <- i |> Int32.of_int;
-  tab.{i + up} <- u |> Int32.of_int;
-  tab.{i + down} <- d |> Int32.of_int;
-  tab.{d + up} <- i |> Int32.of_int
+  let d = tab.{u + down} |> Int64.to_int in
+  tab.{u + down} <- i |> Int64.of_int;
+  tab.{i + up} <- u |> Int64.of_int;
+  tab.{i + down} <- d |> Int64.of_int;
+  tab.{d + up} <- i |> Int64.of_int
 
 let hide_vert tab i =
   let above = tab.(i + up)
@@ -70,7 +84,7 @@ let restore_vert tab i =
 let incr_point tab i = tab.(i + data) <- tab.(i + data) + 1
 
 let incr_point_big tab i =
-  tab.{i + data} <- Int32.succ tab.{i + data}
+  tab.{i + data} <- Int64.add tab.{i + data} 5L
 
 let decr_point tab i = tab.(i + data) <- tab.(i + data) - 1
 
@@ -276,18 +290,18 @@ let compile : 'a t -> int array =
 
 let compile_bigarray :
     'a t ->
-    ( int32,
-      Bigarray.int32_elt,
+    ( int64,
+      Bigarray.int64_elt,
       Bigarray.c_layout )
     Bigarray.Array1.t =
  fun t ->
   let arr =
-    Bigarray.Array1.init Int32 Bigarray.c_layout t.counter
-      (fun i -> i / 5 * 5 |> Int32.of_int)
+    Bigarray.Array1.init Int64 Bigarray.c_layout t.counter
+      (fun i -> i / 5 * 5 |> Int64.of_int)
   in
   Hashtbl.iter
     (fun _ (is_primary, pos) ->
-      arr.{pos + data} <- Int32.zero;
+      arr.{pos + data} <- Int64.zero;
       if is_primary then insert_horiz_big arr 0 pos)
     t.item_tbl;
   Hashtbl.iter
@@ -300,7 +314,7 @@ let compile_bigarray :
             insert_horiz_big arr pos !curr_pos;
           insert_vert_big arr item_pos !curr_pos;
           incr_point_big arr item_pos;
-          arr.{!curr_pos + data} <- item_pos |> Int32.of_int;
+          arr.{!curr_pos + data} <- item_pos |> Int64.of_int;
           curr_pos := 5 + !curr_pos)
         item_list)
     t.shape_tbl;
@@ -315,23 +329,46 @@ let has_solution pb =
   forward arr;
   arr.(0 + down) <> 0
 
+(* let count_solutions pb = *)
+(*   let arr = compile pb *)
+(*   and cnt = ref 0 in *)
+(*   forward arr; *)
+(*   while arr.(0 + down) <> 0 do *)
+(*     assert (arr.(0 + right) = 0); *)
+(*     incr cnt; *)
+(*     backward arr *)
+(*   done; *)
+(*   !cnt *)
+
+(* let count_solutions_c pb = *)
+(*   let arr = compile_bigarray pb *)
+(*   and cnt = ref 0 in *)
+(*   forward_c arr; *)
+(*   while arr.{0 + down} <> (Obj.magic arr : int64) do *)
+(*     incr cnt; *)
+(*     backward_c arr *)
+(*   done; *)
+(*   !cnt *)
+
 let count_solutions pb =
-  let arr = compile pb
+  let arr = compile_bigarray pb
   and cnt = ref 0 in
-  forward arr;
-  while arr.(0 + down) <> 0 do
-    assert (arr.(0 + right) = 0);
+  let addr = (Obj.magic arr : int64) in
+  prepare2_c arr;
+  forward2_c arr;
+  while not (Int64.equal arr.{3} addr) do
     incr cnt;
-    backward arr
+    backward2_c arr
   done;
   !cnt
 
-let count_solutions_c pb =
-  let arr = compile_bigarray pb
-  and cnt = ref 0 in
-  forward_c arr;
-  while arr.{0 + down} <> Int32.zero do
-    incr cnt;
-    backward_c arr
-  done;
-  !cnt
+(*
+let comp a b =
+  assert (Bigarray.Array1.dim a = Array.length b);
+  let addr = (Obj.magic a : int64) in
+  for i = 0 to Array.length b - 1 do
+    let other = Int64.div (Int64.sub a.{i} addr) 8L in
+    Printf.printf "%03d : %Ld -> %Ld | %d\n" i a.{i} other
+      b.(i)
+  done
+*)
