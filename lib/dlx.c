@@ -18,11 +18,11 @@ typedef struct Cell {
 } cell;
 
 static inline void _insert_horiz(cell *l, cell *i) {
-  cell *r = l -> rgt;
-  l -> rgt = i;
-  i -> lft = l;
-  r -> lft = i;
-  i -> rgt = r;
+  cell *r = l->rgt;
+  l->rgt = i;
+  i->lft = l;
+  r->lft = i;
+  i->rgt = r;
 }
 
 void insert_horiz(int64_t *arr, int64_t l, int64_t i) {
@@ -34,11 +34,11 @@ void insert_horiz(int64_t *arr, int64_t l, int64_t i) {
 }
 
 static inline void _insert_vert(cell *u, cell *i) {
-  cell *d = u -> dwn;
-  u -> dwn = i;
-  i -> upp = u;
-  d -> upp = i;
-  i -> dwn = d;
+  cell *d = u->dwn;
+  u->dwn = i;
+  i->upp = u;
+  d->upp = i;
+  i->dwn = d;
 }
 
 void insert_vert(int64_t *arr, int64_t u, int64_t i) {
@@ -50,10 +50,10 @@ void insert_vert(int64_t *arr, int64_t u, int64_t i) {
 }
 
 static inline void _hide_vert(cell *i) {
-  cell *above = i -> upp;
-  cell *below = i -> dwn;
-  above -> dwn = below;
-  below -> upp = above;
+  cell *above = i->upp;
+  cell *below = i->dwn;
+  above->dwn = below;
+  below->upp = above;
 }
 
 void hide_vert(int64_t *arr, int64_t i) {
@@ -64,10 +64,10 @@ void hide_vert(int64_t *arr, int64_t i) {
 }
 
 static inline void _restore_vert(cell *i) {
-  cell *above = i -> upp;
-  cell *below = i -> dwn;
-  above -> dwn = i;
-  below -> upp = i;
+  cell *above = i->upp;
+  cell *below = i->dwn;
+  above->dwn = i;
+  below->upp = i;
 }
 
 void restore_vert(int64_t *arr, int64_t i) {
@@ -78,11 +78,11 @@ void restore_vert(int64_t *arr, int64_t i) {
 }
 
 static inline void _cover_col_aux2(cell *row) {
-  cell *pos = row -> rgt;
+  cell *pos = row->rgt;
   while (pos != row) {
     _hide_vert(pos);
-    pos -> dat -> dat -= 1;
-    pos = pos -> rgt;
+    pos->dat->dat -= 1;
+    pos = pos->rgt;
   }
 }
 
@@ -96,10 +96,10 @@ void cover_col_aux2(int64_t *arr, int64_t row) {
 }
 
 static inline void _cover_col_aux1(cell *col) {
-  cell *row = col -> dwn;
+  cell *row = col->dwn;
   while (row != col) {
     _cover_col_aux2(row);
-    row = row -> dwn;
+    row = row->dwn;
   }
 }
 
@@ -113,10 +113,10 @@ void cover_col_aux1(int64_t *arr, int64_t col) {
 }
 
 static inline void _cover_column(cell *col) {
-  cell *l = col -> lft;
-  cell *r = col -> rgt;
-  l -> rgt = r;
-  r -> lft = l;
+  cell *l = col->lft;
+  cell *r = col->rgt;
+  l->rgt = r;
+  r->lft = l;
   _cover_col_aux1(col);
 }
 
@@ -129,12 +129,12 @@ void cover_column(int64_t *arr, int64_t col) {
 }
 
 static inline void _cover_column_weird(cell *head, cell *col) {
-  cell *l = col -> lft;
-  cell *r = col -> rgt;
-  l -> rgt = r;
-  r -> lft = l;
-  col -> rgt = head -> dwn;
-  head -> dwn = col;
+  cell *l = col->lft;
+  cell *r = col->rgt;
+  l->rgt = r;
+  r->lft = l;
+  col->rgt = head->dwn;
+  head->dwn = col;
   _cover_col_aux1(col);
 }
 
@@ -149,11 +149,11 @@ void cover_column_weird(int64_t *arr, int64_t col) {
 }
 
 static inline void _uncover_col_aux2(cell *row) {
-  cell *pos = row -> lft;
+  cell *pos = row->lft;
   while (pos != row) {
     _restore_vert(pos);
-    pos -> dat -> dat += 1;
-    pos = pos -> lft;
+    pos->dat->dat += 1;
+    pos = pos->lft;
   }
 }
 
@@ -169,7 +169,7 @@ void uncover_col_aux2(int64_t *arr, int64_t row) {
 static inline void _uncover_col_aux1(cell *col, cell *row) {
   while (row != col) {
     _uncover_col_aux2(row);
-    row = row -> upp;
+    row = row->upp;
   }
 }
 
@@ -181,12 +181,12 @@ void uncover_col_aux1(int64_t *arr, int64_t col, int64_t row) {
 }
 
 static inline void _uncover_col_aux1_weird(cell *col) {
-  cell *row = col -> upp;
+  cell *row = col->upp;
   while (true) {
     _uncover_col_aux2(row);
-    cell *next = row -> upp;
+    cell *next = row->upp;
     if (next == col) {
-      col -> dwn = row;
+      col->dwn = row;
       break;
     }
     row = next;
@@ -207,11 +207,11 @@ void uncover_col_aux1_weird(int64_t *arr, int64_t col) {
 }
 
 static inline void _uncover_column(cell *col) {
-  _uncover_col_aux1(col, col -> upp);
-  cell *l = col -> lft;
-  cell *r = col -> rgt;
-  l -> rgt = col;
-  r -> lft = col;
+  _uncover_col_aux1(col, col->upp);
+  cell *l = col->lft;
+  cell *r = col->rgt;
+  l->rgt = col;
+  r->lft = col;
 }
 
 void uncover_column(int64_t *arr, int64_t col) {
@@ -223,15 +223,15 @@ void uncover_column(int64_t *arr, int64_t col) {
 }
 
 static inline void _uncover_column_weird(cell *head) {
-  cell *col = head -> dwn;
+  cell *col = head->dwn;
   // cell *row = col -> upp;
-  head -> dwn = col -> rgt;
+  head->dwn = col->rgt;
   _uncover_col_aux1_weird(col);
-  cell *l = col -> lft;
-  cell *r = l -> rgt;
-  l -> rgt = col;
-  r -> lft = col;
-  col -> rgt = r;
+  cell *l = col->lft;
+  cell *r = l->rgt;
+  l->rgt = col;
+  r->lft = col;
+  col->rgt = r;
 }
 
 void uncover_column_weird(int64_t *arr) {
@@ -247,10 +247,10 @@ void uncover_column_weird(int64_t *arr) {
 }
 
 static inline void _cover_right(cell *row) {
-  cell *pos = row -> rgt;
+  cell *pos = row->rgt;
   while (pos != row) {
-    _cover_column(pos -> dat);
-    pos = pos -> rgt;
+    _cover_column(pos->dat);
+    pos = pos->rgt;
   }
 }
 
@@ -263,10 +263,10 @@ void cover_right(int64_t *arr, int64_t row) {
 }
 
 static inline void _uncover_left(cell *row) {
-  cell *pos = row -> lft;
+  cell *pos = row->lft;
   while (pos != row) {
-    _uncover_column(pos -> dat);
-    pos = pos -> lft;
+    _uncover_column(pos->dat);
+    pos = pos->lft;
   }
 }
 
@@ -285,44 +285,43 @@ void _mix(cell *head, bool forward) {
     goto forward;
 
 backward:
-  col = head -> dwn;
+  col = head->dwn;
 
   if (col == head)
     return;
-  row = col -> dwn;
+  row = col->dwn;
   _uncover_left(row);
-  row = row -> dwn; // next row
+  row = row->dwn; // next row
 
   if (row == col) {
     _uncover_column_weird(head);
     goto backward;
   }
-  col -> dwn = row;
+  col->dwn = row;
   _cover_right(row);
 
 forward:
-  col = head -> rgt;
+  col = head->rgt;
 
   if (col == head)
     return;
-  cell *card = col -> dat;
-  cell *cand = col -> rgt;
+  cell *card = col->dat;
+  cell *cand = col->rgt;
   while (cand != head) {
-    cell *new_card = cand -> dat;
+    cell *new_card = cand->dat;
     if (new_card < card) {
       col = cand;
       card = new_card;
     }
-    cand = cand -> rgt;
+    cand = cand->rgt;
   }
-  row = col -> dwn;
+  row = col->dwn;
   if (row == col)
     goto backward;
   _cover_column_weird(head, col);
   _cover_right(row);
   goto forward;
 }
-
 
 void mix(int64_t *arr, bool forward) {
   int64_t col, row;
@@ -398,9 +397,9 @@ CAMLprim value backward(value bigarray) {
 CAMLprim value prepare2(value bigarray) {
   int64_t *arr = Caml_ba_data_val(bigarray);
   // Update pointers
-  int dim = Caml_ba_array_val(bigarray) -> dim[0];
+  int dim = Caml_ba_array_val(bigarray)->dim[0];
   for (int i = 0; i < dim; i++) {
-    arr[i] = (int64_t) arr + arr[i] * sizeof(struct Cell *);
+    arr[i] = (int64_t)arr + arr[i] * sizeof(struct Cell *);
     // arr[i] = (int64_t) &arr[i];
   }
   // cell *head = (cell *)arr;
