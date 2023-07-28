@@ -14,42 +14,42 @@ val compile_bigarray :
   Bigarray.Array1.t
 
 (* val has_solution_comp : int array -> bool *)
-(* val has_solution : 'a t -> bool *)
+val has_solution : 'a t -> bool
 val count_solutions : 'a t -> int
 
 (* val count_solutions_c : 'a t -> int *)
 (* val forward : int array -> unit *)
 (* val backward : int array -> unit *)
 
-val forward_c :
+(* val forward_c : *)
+(*   ( int64, *)
+(*     Bigarray.int64_elt, *)
+(*     Bigarray.c_layout ) *)
+(*   Bigarray.Array1.t -> *)
+(*   unit *)
+
+(* val backward_c : *)
+(*   ( int64, *)
+(*     Bigarray.int64_elt, *)
+(*     Bigarray.c_layout ) *)
+(*   Bigarray.Array1.t -> *)
+(*   unit *)
+
+val forward :
   ( int64,
     Bigarray.int64_elt,
     Bigarray.c_layout )
   Bigarray.Array1.t ->
   unit
 
-val backward_c :
+val backward :
   ( int64,
     Bigarray.int64_elt,
     Bigarray.c_layout )
   Bigarray.Array1.t ->
   unit
 
-val forward2_c :
-  ( int64,
-    Bigarray.int64_elt,
-    Bigarray.c_layout )
-  Bigarray.Array1.t ->
-  unit
-
-val backward2_c :
-  ( int64,
-    Bigarray.int64_elt,
-    Bigarray.c_layout )
-  Bigarray.Array1.t ->
-  unit
-
-val prepare2_c :
+val prepare :
   ( int64,
     Bigarray.int64_elt,
     Bigarray.c_layout )

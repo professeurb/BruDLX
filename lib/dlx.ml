@@ -1,37 +1,37 @@
-external forward_c :
+(* external forward_c : *)
+(*   ( int64, *)
+(*     Bigarray.int64_elt, *)
+(*     Bigarray.c_layout ) *)
+(*   Bigarray.Array1.t -> *)
+(*   unit = "forward" *)
+
+(* external backward_c : *)
+(*   ( int64, *)
+(*     Bigarray.int64_elt, *)
+(*     Bigarray.c_layout ) *)
+(*   Bigarray.Array1.t -> *)
+(*   unit = "backward" *)
+
+external forward :
   ( int64,
     Bigarray.int64_elt,
     Bigarray.c_layout )
   Bigarray.Array1.t ->
   unit = "forward"
 
-external backward_c :
+external backward :
   ( int64,
     Bigarray.int64_elt,
     Bigarray.c_layout )
   Bigarray.Array1.t ->
   unit = "backward"
 
-external forward2_c :
+external prepare :
   ( int64,
     Bigarray.int64_elt,
     Bigarray.c_layout )
   Bigarray.Array1.t ->
-  unit = "forward2"
-
-external backward2_c :
-  ( int64,
-    Bigarray.int64_elt,
-    Bigarray.c_layout )
-  Bigarray.Array1.t ->
-  unit = "backward2"
-
-external prepare2_c :
-  ( int64,
-    Bigarray.int64_elt,
-    Bigarray.c_layout )
-  Bigarray.Array1.t ->
-  unit = "prepare2"
+  unit = "prepare"
 
 (* type 'a cmp = int array *)
 
@@ -351,15 +351,22 @@ let compile_bigarray :
 (*   done; *)
 (*   !cnt *)
 
+let has_solution pb =
+  let arr = compile_bigarray pb in
+  let addr = (Obj.magic arr : int64) in
+  prepare arr;
+  forward arr;
+  not (Int64.equal arr.{3} addr)
+
 let count_solutions pb =
   let arr = compile_bigarray pb
   and cnt = ref 0 in
   let addr = (Obj.magic arr : int64) in
-  prepare2_c arr;
-  forward2_c arr;
+  prepare arr;
+  forward arr;
   while not (Int64.equal arr.{3} addr) do
     incr cnt;
-    backward2_c arr
+    backward arr
   done;
   !cnt
 

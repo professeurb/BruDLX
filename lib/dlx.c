@@ -25,13 +25,13 @@ static inline void _insert_horiz(cell *l, cell *i) {
   i->rgt = r;
 }
 
-void insert_horiz(int64_t *arr, int64_t l, int64_t i) {
-  int64_t r = arr[l + right];
-  arr[l + right] = i;
-  arr[i + left] = l;
-  arr[r + left] = i;
-  arr[i + right] = r;
-}
+// void insert_horiz_old(int64_t *arr, int64_t l, int64_t i) {
+//   int64_t r = arr[l + right];
+//   arr[l + right] = i;
+//   arr[i + left] = l;
+//   arr[r + left] = i;
+//   arr[i + right] = r;
+// }
 
 static inline void _insert_vert(cell *u, cell *i) {
   cell *d = u->dwn;
@@ -41,13 +41,13 @@ static inline void _insert_vert(cell *u, cell *i) {
   i->dwn = d;
 }
 
-void insert_vert(int64_t *arr, int64_t u, int64_t i) {
-  int64_t d = arr[u + down];
-  arr[u + down] = i;
-  arr[i + up] = u;
-  arr[d + up] = i;
-  arr[i + down] = d;
-}
+// void insert_vert_old(int64_t *arr, int64_t u, int64_t i) {
+//   int64_t d = arr[u + down];
+//   arr[u + down] = i;
+//   arr[i + up] = u;
+//   arr[d + up] = i;
+//   arr[i + down] = d;
+// }
 
 static inline void _hide_vert(cell *i) {
   cell *above = i->upp;
@@ -56,12 +56,12 @@ static inline void _hide_vert(cell *i) {
   below->upp = above;
 }
 
-void hide_vert(int64_t *arr, int64_t i) {
-  int64_t above = arr[i + up];
-  int64_t below = arr[i + down];
-  arr[above + down] = below;
-  arr[below + up] = above;
-}
+// void hide_vert_old(int64_t *arr, int64_t i) {
+//   int64_t above = arr[i + up];
+//   int64_t below = arr[i + down];
+//   arr[above + down] = below;
+//   arr[below + up] = above;
+// }
 
 static inline void _restore_vert(cell *i) {
   cell *above = i->upp;
@@ -70,12 +70,12 @@ static inline void _restore_vert(cell *i) {
   below->upp = i;
 }
 
-void restore_vert(int64_t *arr, int64_t i) {
-  int64_t above = arr[i + up];
-  int64_t below = arr[i + down];
-  arr[above + down] = i;
-  arr[below + up] = i;
-}
+// void restore_vert_old(int64_t *arr, int64_t i) {
+//   int64_t above = arr[i + up];
+//   int64_t below = arr[i + down];
+//   arr[above + down] = i;
+//   arr[below + up] = i;
+// }
 
 static inline void _cover_col_aux2(cell *row) {
   cell *pos = row->rgt;
@@ -86,14 +86,14 @@ static inline void _cover_col_aux2(cell *row) {
   }
 }
 
-void cover_col_aux2(int64_t *arr, int64_t row) {
-  int64_t pos = arr[row + right];
-  while (pos != row) {
-    hide_vert(arr, pos);
-    arr[arr[pos + datum] + datum] -= 1;
-    pos = arr[pos + right];
-  }
-}
+// void cover_col_aux2_old(int64_t *arr, int64_t row) {
+//   int64_t pos = arr[row + right];
+//   while (pos != row) {
+//     hide_vert_old(arr, pos);
+//     arr[arr[pos + datum] + datum] -= 1;
+//     pos = arr[pos + right];
+//   }
+// }
 
 static inline void _cover_col_aux1(cell *col) {
   cell *row = col->dwn;
@@ -103,14 +103,14 @@ static inline void _cover_col_aux1(cell *col) {
   }
 }
 
-void cover_col_aux1(int64_t *arr, int64_t col) {
-  int64_t row = arr[col + down];
-  while (row != col) {
-    // int64_t pos = arr[row + right];
-    cover_col_aux2(arr, row);
-    row = arr[row + down];
-  }
-}
+// void cover_col_aux1_old(int64_t *arr, int64_t col) {
+//   int64_t row = arr[col + down];
+//   while (row != col) {
+//     // int64_t pos = arr[row + right];
+//     cover_col_aux2_old(arr, row);
+//     row = arr[row + down];
+//   }
+// }
 
 static inline void _cover_column(cell *col) {
   cell *l = col->lft;
@@ -120,13 +120,13 @@ static inline void _cover_column(cell *col) {
   _cover_col_aux1(col);
 }
 
-void cover_column(int64_t *arr, int64_t col) {
-  int64_t l = arr[col + left];
-  int64_t r = arr[col + right];
-  arr[l + right] = r;
-  arr[r + left] = l;
-  cover_col_aux1(arr, col);
-}
+// void cover_column_old(int64_t *arr, int64_t col) {
+//   int64_t l = arr[col + left];
+//   int64_t r = arr[col + right];
+//   arr[l + right] = r;
+//   arr[r + left] = l;
+//   cover_col_aux1_old(arr, col);
+// }
 
 static inline void _cover_column_weird(cell *head, cell *col) {
   cell *l = col->lft;
@@ -138,15 +138,15 @@ static inline void _cover_column_weird(cell *head, cell *col) {
   _cover_col_aux1(col);
 }
 
-void cover_column_weird(int64_t *arr, int64_t col) {
-  int64_t l = arr[col + left];
-  int64_t r = arr[col + right];
-  arr[l + right] = r;
-  arr[r + left] = l;
-  arr[col + right] = arr[0 + down];
-  arr[0 + down] = col;
-  cover_col_aux1(arr, col);
-}
+// void cover_column_weird_old(int64_t *arr, int64_t col) {
+//   int64_t l = arr[col + left];
+//   int64_t r = arr[col + right];
+//   arr[l + right] = r;
+//   arr[r + left] = l;
+//   arr[col + right] = arr[0 + down];
+//   arr[0 + down] = col;
+//   cover_col_aux1_old(arr, col);
+// }
 
 static inline void _uncover_col_aux2(cell *row) {
   cell *pos = row->lft;
@@ -157,14 +157,14 @@ static inline void _uncover_col_aux2(cell *row) {
   }
 }
 
-void uncover_col_aux2(int64_t *arr, int64_t row) {
-  int64_t pos = arr[row + left];
-  while (pos != row) {
-    restore_vert(arr, pos);
-    arr[arr[pos + datum] + datum] += 1;
-    pos = arr[pos + left];
-  }
-}
+// void uncover_col_aux2_old(int64_t *arr, int64_t row) {
+//   int64_t pos = arr[row + left];
+//   while (pos != row) {
+//     restore_vert_old(arr, pos);
+//     arr[arr[pos + datum] + datum] += 1;
+//     pos = arr[pos + left];
+//   }
+// }
 
 static inline void _uncover_col_aux1(cell *col, cell *row) {
   while (row != col) {
@@ -173,12 +173,12 @@ static inline void _uncover_col_aux1(cell *col, cell *row) {
   }
 }
 
-void uncover_col_aux1(int64_t *arr, int64_t col, int64_t row) {
-  while (row != col) {
-    uncover_col_aux2(arr, row);
-    row = arr[row + up];
-  }
-}
+// void uncover_col_aux1_old(int64_t *arr, int64_t col, int64_t row) {
+//   while (row != col) {
+//     uncover_col_aux2_old(arr, row);
+//     row = arr[row + up];
+//   }
+// }
 
 static inline void _uncover_col_aux1_weird(cell *col) {
   cell *row = col->upp;
@@ -193,18 +193,18 @@ static inline void _uncover_col_aux1_weird(cell *col) {
   }
 }
 
-void uncover_col_aux1_weird(int64_t *arr, int64_t col) {
-  int64_t row = arr[col + up];
-  while (true) {
-    uncover_col_aux2(arr, row);
-    int64_t next = arr[row + up];
-    if (next == col) {
-      arr[col + down] = row;
-      break;
-    }
-    row = next;
-  }
-}
+// void uncover_col_aux1_weird_old(int64_t *arr, int64_t col) {
+//   int64_t row = arr[col + up];
+//   while (true) {
+//     uncover_col_aux2_old(arr, row);
+//     int64_t next = arr[row + up];
+//     if (next == col) {
+//       arr[col + down] = row;
+//       break;
+//     }
+//     row = next;
+//   }
+// }
 
 static inline void _uncover_column(cell *col) {
   _uncover_col_aux1(col, col->upp);
@@ -214,13 +214,13 @@ static inline void _uncover_column(cell *col) {
   r->lft = col;
 }
 
-void uncover_column(int64_t *arr, int64_t col) {
-  uncover_col_aux1(arr, col, arr[col + up]);
-  int64_t l = arr[col + left];
-  int64_t r = arr[col + right];
-  arr[l + right] = col;
-  arr[r + left] = col;
-}
+// void uncover_column_old(int64_t *arr, int64_t col) {
+//   uncover_col_aux1_old(arr, col, arr[col + up]);
+//   int64_t l = arr[col + left];
+//   int64_t r = arr[col + right];
+//   arr[l + right] = col;
+//   arr[r + left] = col;
+// }
 
 static inline void _uncover_column_weird(cell *head) {
   cell *col = head->dwn;
@@ -234,17 +234,17 @@ static inline void _uncover_column_weird(cell *head) {
   col->rgt = r;
 }
 
-void uncover_column_weird(int64_t *arr) {
-  int64_t col = arr[0 + down];
-  // int64_t row = arr[col + up];
-  arr[0 + down] = arr[col + right];
-  uncover_col_aux1_weird(arr, col);
-  int64_t l = arr[col + left];
-  int64_t r = arr[l + right];
-  arr[l + right] = col;
-  arr[r + left] = col;
-  arr[col + right] = r;
-}
+// void uncover_column_weird_old(int64_t *arr) {
+//   int64_t col = arr[0 + down];
+//   // int64_t row = arr[col + up];
+//   arr[0 + down] = arr[col + right];
+//   uncover_col_aux1_weird_old(arr, col);
+//   int64_t l = arr[col + left];
+//   int64_t r = arr[l + right];
+//   arr[l + right] = col;
+//   arr[r + left] = col;
+//   arr[col + right] = r;
+// }
 
 static inline void _cover_right(cell *row) {
   cell *pos = row->rgt;
@@ -254,13 +254,13 @@ static inline void _cover_right(cell *row) {
   }
 }
 
-void cover_right(int64_t *arr, int64_t row) {
-  int64_t pos = arr[row + right];
-  while (pos != row) {
-    cover_column(arr, arr[pos + datum]);
-    pos = arr[pos + right];
-  }
-}
+// void cover_right_old(int64_t *arr, int64_t row) {
+//   int64_t pos = arr[row + right];
+//   while (pos != row) {
+//     cover_column_old(arr, arr[pos + datum]);
+//     pos = arr[pos + right];
+//   }
+// }
 
 static inline void _uncover_left(cell *row) {
   cell *pos = row->lft;
@@ -270,13 +270,13 @@ static inline void _uncover_left(cell *row) {
   }
 }
 
-void uncover_left(int64_t *arr, int64_t row) {
-  int64_t pos = arr[row + left];
-  while (pos != row) {
-    uncover_column(arr, arr[pos + datum]);
-    pos = arr[pos + left];
-  }
-}
+// void uncover_left_old(int64_t *arr, int64_t row) {
+//   int64_t pos = arr[row + left];
+//   while (pos != row) {
+//     uncover_column_old(arr, arr[pos + datum]);
+//     pos = arr[pos + left];
+//   }
+// }
 
 void _mix(cell *head, bool forward) {
   cell *col, *row;
@@ -323,78 +323,78 @@ forward:
   goto forward;
 }
 
-void mix(int64_t *arr, bool forward) {
-  int64_t col, row;
+// void mix(int64_t *arr, bool forward) {
+//   int64_t col, row;
+//
+//   if (forward)
+//     goto forward;
+//
+// backward:
+//   col = arr[0 + down];
+//
+//   if (col == 0)
+//     return;
+//   row = arr[col + down];
+//   uncover_left_old(arr, row);
+//   row = arr[row + down]; // next row
+//
+//   if (row == col) {
+//     uncover_column_weird_old(arr);
+//     goto backward;
+//   }
+//   arr[col + down] = row;
+//   cover_right_old(arr, row);
+//
+// forward:
+//   col = arr[0 + right];
+//
+//   if (col == 0)
+//     return;
+//   int64_t card = arr[col + datum];
+//   int64_t cand = arr[col + right];
+//   while (cand != 0) {
+//     int64_t new_card = arr[cand + datum];
+//     if (new_card < card) {
+//       col = cand;
+//       card = new_card;
+//     }
+//     cand = arr[cand + right];
+//   }
+//   if (card == 0)
+//     goto backward;
+//   cover_column_weird_old(arr, col);
+//   row = arr[col + down];
+//   cover_right_old(arr, row);
+//   goto forward;
+// }
 
-  if (forward)
-    goto forward;
-
-backward:
-  col = arr[0 + down];
-
-  if (col == 0)
-    return;
-  row = arr[col + down];
-  uncover_left(arr, row);
-  row = arr[row + down]; // next row
-
-  if (row == col) {
-    uncover_column_weird(arr);
-    goto backward;
-  }
-  arr[col + down] = row;
-  cover_right(arr, row);
-
-forward:
-  col = arr[0 + right];
-
-  if (col == 0)
-    return;
-  int64_t card = arr[col + datum];
-  int64_t cand = arr[col + right];
-  while (cand != 0) {
-    int64_t new_card = arr[cand + datum];
-    if (new_card < card) {
-      col = cand;
-      card = new_card;
-    }
-    cand = arr[cand + right];
-  }
-  if (card == 0)
-    goto backward;
-  cover_column_weird(arr, col);
-  row = arr[col + down];
-  cover_right(arr, row);
-  goto forward;
-}
-
-CAMLprim value forward2(value bigarray) {
+CAMLprim value forward(value bigarray) {
   cell *head = Caml_ba_data_val(bigarray);
   _mix(head, true);
   return Val_unit;
 }
 
-CAMLprim value forward(value bigarray) {
-  int64_t *arr = Caml_ba_data_val(bigarray);
-  // _forward(arr);
-  mix(arr, true);
-  return Val_unit;
-}
+// CAMLprim value forward(value bigarray) {
+//   int64_t *arr = Caml_ba_data_val(bigarray);
+//   // _forward(arr);
+//   mix(arr, true);
+//   return Val_unit;
+// }
 
-CAMLprim value backward2(value bigarray) {
+CAMLprim value backward(value bigarray) {
   cell *head = Caml_ba_data_val(bigarray);
   _mix(head, false);
   return Val_unit;
 }
 
-CAMLprim value backward(value bigarray) {
-  int64_t *arr = Caml_ba_data_val(bigarray);
-  // _backward(arr);
-  mix(arr, false);
-  return Val_unit;
-}
+// CAMLprim value backward(value bigarray) {
+//   int64_t *arr = Caml_ba_data_val(bigarray);
+//   // _backward(arr);
+//   mix(arr, false);
+//   return Val_unit;
+// }
 
-CAMLprim value prepare2(value bigarray) {
+CAMLprim value prepare(value bigarray) {
   int64_t *arr = Caml_ba_data_val(bigarray);
   // Update pointers
   int dim = Caml_ba_array_val(bigarray)->dim[0];

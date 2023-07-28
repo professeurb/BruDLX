@@ -19,12 +19,15 @@ let triangle n =
         [ (x, y); (x + 1, y); (x + 1, y + 1) ]
     done
   done;
-  Dlx.count_solutions dlx
+  dlx
 ;;
 
 for i = 1 to 21 do
   if i mod 3 <> 1 then
-    Printf.printf "%2d: %d\n%!" i (triangle i)
+    let pb = triangle i in
+    Printf.printf "%2d: %d %s\n%!" i
+      (Dlx.count_solutions pb)
+      (if Dlx.has_solution pb then "*" else ".")
 done
 
 type elt = Val of int | Pos of int
