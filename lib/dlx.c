@@ -72,7 +72,7 @@ static inline void cover_column(cell *col) {
   cover_col_aux1(col);
 }
 
-static inline void cover_column_weird(cell *head, cell *col) {
+static inline void cover_column_register(cell *head, cell *col) {
   cell *l = col->lft;
   cell *r = col->rgt;
   l->rgt = r;
@@ -98,7 +98,7 @@ static inline void uncover_col_aux1(cell *col, cell *row) {
   }
 }
 
-static inline void uncover_col_aux1_weird(cell *col) {
+static inline void uncover_col_aux1_unregister(cell *col) {
   cell *row = col->upp;
   while (true) {
     uncover_col_aux2(row);
@@ -119,11 +119,11 @@ static inline void uncover_column(cell *col) {
   r->lft = col;
 }
 
-static inline void uncover_column_weird(cell *head) {
+static inline void uncover_column_unregister(cell *head) {
   cell *col = head->dwn;
   // cell *row = col -> upp;
   head->dwn = col->rgt;
-  uncover_col_aux1_weird(col);
+  uncover_col_aux1_unregister(col);
   cell *l = col->lft;
   cell *r = l->rgt;
   l->rgt = col;
@@ -163,7 +163,7 @@ backward:
   row = row->dwn; // next row
 
   if (row == col) {
-    uncover_column_weird(head);
+    uncover_column_unregister(head);
     goto backward;
   }
   col->dwn = row;
@@ -187,7 +187,7 @@ forward:
   row = col->dwn;
   if (row == col)
     goto backward;
-  cover_column_weird(head, col);
+  cover_column_register(head, col);
   cover_right(row);
   goto forward;
 }

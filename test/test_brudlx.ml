@@ -1,35 +1,5 @@
 open Brudlx
 
-let triangle n =
-  let dlx = Dlx.init () in
-  for y = 0 to n - 1 do
-    for x = 0 to y do
-      Dlx.add_primary dlx (x, y)
-    done
-  done;
-  for y = 0 to n - 2 do
-    for x = 0 to y do
-      Dlx.add_shape dlx
-        [ (x, y); (x, y + 1); (x + 1, y + 1) ]
-    done
-  done;
-  for y = 1 to n - 2 do
-    for x = 0 to y - 1 do
-      Dlx.add_shape dlx
-        [ (x, y); (x + 1, y); (x + 1, y + 1) ]
-    done
-  done;
-  dlx
-;;
-
-for i = 1 to 21 do
-  if i mod 3 <> 1 then
-    let pb = triangle i in
-    Printf.printf "%2d: %d %s\n%!" i
-      (Dlx.count_solutions pb)
-      (if Dlx.has_solution pb then "*" else ".")
-done
-
 type elt = Val of int | Pos of int
 
 let langford n =
@@ -45,12 +15,32 @@ let langford n =
       Dlx.add_shape dlx [ Val i; Pos j; Pos (j + i + 1) ]
     done
   done;
-  Dlx.count_solutions dlx
+  dlx
 
 let rec range a b =
   if a > b then [] else a :: range (a + 1) b
 ;;
 
 assert (
-  List.map langford (range 1 10)
+  List.map
+    (fun i -> langford i |> Dlx.count_solutions)
+    (range 1 10)
   = [ 0; 0; 2; 2; 0; 0; 52; 300; 0; 0 ])
+
+let rec gen_to_list g =
+  match g () with
+  | None -> []
+  | Some v -> v :: gen_to_list g
+
+let _ =
+  let pb = Dlx.init () in
+  for i = 1 to 2 do
+    Dlx.add_primary pb i
+  done;
+  Dlx.add_shape pb [ 1 ];
+  Dlx.add_shape pb [ 2 ];
+  Dlx.add_shape pb [ 1; 2 ];
+  assert (
+    Dlx.generator pb |> gen_to_list |> List.sort compare
+    = ([ [ [ 1 ]; [ 2 ] ]; [ [ 1; 2 ] ] ]
+      |> List.sort compare))

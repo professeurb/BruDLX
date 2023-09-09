@@ -16,6 +16,8 @@ val compile_bigarray :
 (* val has_solution_comp : int array -> bool *)
 val has_solution : 'a t -> bool
 val count_solutions : 'a t -> int
+val aa : 'a t -> unit
+val generator : 'a t -> unit -> 'a list list option
 
 (* val count_solutions_c : 'a t -> int *)
 (* val forward : int array -> unit *)
@@ -50,6 +52,13 @@ val backward :
   unit
 
 val prepare :
+  ( int64,
+    Bigarray.int64_elt,
+    Bigarray.c_layout )
+  Bigarray.Array1.t ->
+  unit
+
+val print :
   ( int64,
     Bigarray.int64_elt,
     Bigarray.c_layout )
