@@ -1,5 +1,10 @@
 (library
- (name brudlx)
- (public_name brudlx)
- (ocamlopt_flags :standard -O3)
- )
+  (name brudlx)
+  (public_name brudlx)
+  (ocamlopt_flags :standard -O3)
+  (foreign_stubs
+    (language c)
+    (names dlx)
+    (flags -O3)
+    )
+  )
