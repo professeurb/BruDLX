@@ -25,6 +25,10 @@ and up = 2
 and down = 3
 and data = 4
 
+(* and color = 5 *)
+and size = 6
+and long_size = 6L
+
 let insert_horiz_big tab l i =
   let r = tab.{l + right} |> Int64.to_int in
   tab.{l + right} <- i |> Int64.of_int;
@@ -41,7 +45,7 @@ let insert_vert_big tab u i =
 
 let incr_point_big incr_point i =
   incr_point.{i + data} <-
-    Int64.add incr_point.{i + data} 5L
+    Int64.add incr_point.{i + data} long_size
 
 type 'a t = {
   mutable counter : int;
@@ -51,7 +55,7 @@ type 'a t = {
 
 let init () =
   {
-    counter = 5;
+    counter = size;
     item_tbl = Hashtbl.create 15;
     shape_tbl = Hashtbl.create 15;
   }
@@ -61,7 +65,7 @@ let add_primary : 'a t -> 'a -> unit =
   begin
     assert (Hashtbl.mem t.item_tbl item = false);
     Hashtbl.add t.item_tbl item (true, t.counter);
-    t.counter <- 5 + t.counter
+    t.counter <- size + t.counter
   end
 
 let add_secondary : 'a t -> 'a -> unit =
@@ -69,7 +73,7 @@ let add_secondary : 'a t -> 'a -> unit =
   begin
     assert (Hashtbl.mem t.item_tbl item = false);
     Hashtbl.add t.item_tbl item (false, t.counter);
-    t.counter <- 5 + t.counter
+    t.counter <- size + t.counter
   end
 
 let add_shape : 'a t -> 'a list -> unit =
@@ -79,10 +83,10 @@ let add_shape : 'a t -> 'a list -> unit =
       (fun item -> assert (Hashtbl.mem t.item_tbl item))
       shape;
     Hashtbl.add t.shape_tbl t.counter (shape, true);
-    t.counter <- t.counter + 5;
+    t.counter <- t.counter + size;
     for _ = 2 to List.length shape do
       Hashtbl.add t.shape_tbl t.counter (shape, false);
-      t.counter <- t.counter + 5
+      t.counter <- t.counter + size
     done
   end
 
@@ -95,7 +99,7 @@ let compile_bigarray :
  fun t ->
   let arr =
     Bigarray.Array1.init Int64 Bigarray.c_layout t.counter
-      (fun i -> i / 5 * 5 |> Int64.of_int)
+      (fun i -> i / size * size |> Int64.of_int)
   in
   Hashtbl.iter
     (fun _ (is_primary, pos) ->
@@ -117,7 +121,7 @@ let compile_bigarray :
             incr_point_big arr item_pos;
             arr.{!curr_pos + data} <-
               item_pos |> Int64.of_int;
-            curr_pos := 5 + !curr_pos)
+            curr_pos := size + !curr_pos)
           item_list
       end)
     t.shape_tbl;
@@ -128,7 +132,7 @@ let has_solution pb =
   let addr = (Obj.magic arr : int64) in
   prepare arr;
   forward arr;
-  not (Int64.equal arr.{3} addr)
+  not (Int64.equal arr.{down} addr)
 
 let count_solutions pb =
   let arr = compile_bigarray pb
@@ -136,7 +140,7 @@ let count_solutions pb =
   let addr = (Obj.magic arr : int64) in
   prepare arr;
   forward arr;
-  while not (Int64.equal arr.{3} addr) do
+  while not (Int64.equal arr.{down} addr) do
     incr cnt;
     backward arr
   done;
@@ -153,9 +157,9 @@ let print :
   let addr = (Obj.magic arr : int64) in
   let conv v = Int64.(div (sub v addr) 8L |> to_int) in
   for i = 0 to Bigarray.Array1.dim arr - 1 do
-    if i mod 5 = 0 then Printf.printf "%4d: " i;
+    if i mod size = 0 then Printf.printf "%4d: " i;
     Printf.printf "%4d " (conv arr.{i});
-    if i mod 5 = 4 then print_newline ()
+    if i mod size = size - 1 then print_newline ()
   done;
   print_newline ()
 
@@ -165,7 +169,7 @@ let aa pb =
   prepare arr;
   print arr;
   forward arr;
-  while not (Int64.equal arr.{3} addr) do
+  while not (Int64.equal arr.{down} addr) do
     print arr;
     backward arr
   done
@@ -183,7 +187,7 @@ let get_solution pb arr =
          in
          shape :: sol)
   in
-  aux (conv arr.{3}) []
+  aux (conv arr.{down}) []
 
 let generator pb =
   let arr = compile_bigarray pb in
@@ -192,7 +196,7 @@ let generator pb =
   prepare arr;
   forward arr;
   fun () ->
-    if conv arr.{3} = 0 then None
+    if conv arr.{down} = 0 then None
     else
       let sol = get_solution pb arr in
       backward arr;
