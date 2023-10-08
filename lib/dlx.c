@@ -192,15 +192,79 @@ forward:
   goto forward;
 }
 
+void _forward(cell *head);
+
+void _backward(cell *head) {
+  while (true) {
+    cell *col = head->dwn;
+
+    if (col == head)
+      return;
+    cell *row = col->dwn;
+    uncover_left(row);
+    row = row->dwn; // next row
+
+    if (row != col) {
+      col->dwn = row;
+      cover_right(row);
+      return _forward(head);
+    }
+    uncover_column_unregister(head);
+  }
+}
+
+void _forward(cell *head) {
+  while (true) {
+    cell *col = head->rgt;
+
+    if (col == head) {
+      // We are a a leaf
+      // All the columns are covered
+      return;
+    }
+    // Otherwise, we select the next branch
+    // i.e. the next col to cover
+    cell *card = col->dat;
+    cell *cand = col->rgt;
+    while (cand != head) {
+      cell *new_card = cand->dat;
+      if (new_card < card) {
+        col = cand;
+        card = new_card;
+      }
+      cand = cand->rgt;
+    }
+    // The selected branch is col
+    cell *row = col->dwn;
+    if (row == col)
+      return _backward(head);
+    // Enter the branch and continue
+    cover_column_register(head, col);
+    cover_right(row);
+  }
+}
+
+/*
+void down(cell *head);
+void up(cell *head);
+void step(cell *head);
+
+void down(cell *head) {}
+void up(cell *head) {}
+void step(cell *head) {}
+*/
+
 CAMLprim value forward(value bigarray) {
   cell *head = Caml_ba_data_val(bigarray);
-  mix(head, true);
+  // mix(head, true);
+  _forward(head);
   return Val_unit;
 }
 
 CAMLprim value backward(value bigarray) {
   cell *head = Caml_ba_data_val(bigarray);
-  mix(head, false);
+  // mix(head, false);
+  _backward(head);
   return Val_unit;
 }
 
