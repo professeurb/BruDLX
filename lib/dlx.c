@@ -3,12 +3,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define left 0
-#define right 1
-#define up 2
-#define down 3
-#define datum 4
-
 typedef struct Cell {
   struct Cell *lft;
   struct Cell *rgt;

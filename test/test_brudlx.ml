@@ -2,7 +2,6 @@ open Brudlx
 
 type elt = Val of int | Pos of int
 
-
 let langford n =
   let dlx = Dlx.init () in
   for i = 1 to n do
@@ -20,7 +19,7 @@ let langford n =
 
 let rec range a b =
   if a > b then [] else a :: range (a + 1) b
-
+;;
 
 assert (
   List.map
