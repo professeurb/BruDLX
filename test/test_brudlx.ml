@@ -19,13 +19,13 @@ let langford n =
 
 let rec range a b =
   if a > b then [] else a :: range (a + 1) b
-;;
 
-assert (
-  List.map
-    (fun i -> langford i |> Dlx.count_solutions)
-    (range 1 10)
-  = [ 0; 0; 2; 2; 0; 0; 52; 300; 0; 0 ])
+let _ =
+  assert (
+    List.map
+      (fun i -> langford i |> Dlx.count_solutions)
+      (range 1 10)
+    = [ 0; 0; 2; 2; 0; 0; 52; 300; 0; 0 ])
 
 let rec gen_to_list g =
   match g () with
