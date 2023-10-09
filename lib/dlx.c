@@ -9,7 +9,6 @@ typedef struct Cell {
   struct Cell *upp;
   struct Cell *dwn;
   struct Cell *dat;
-  int64_t clr;
 } cell;
 
 static inline void hide(cell *row) {
@@ -171,8 +170,7 @@ CAMLprim value prepare(value bigarray) {
   // Update pointers
   int dim = Caml_ba_array_val(bigarray)->dim[0];
   for (int i = 0; i < dim; i++) {
-    if (i % 6 != 5)
-      arr[i] = (int64_t)arr + arr[i] * sizeof(struct Cell *);
+    arr[i] = (int64_t)arr + arr[i] * sizeof(struct Cell *);
   }
   return Val_unit;
 }

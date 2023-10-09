@@ -24,10 +24,8 @@ and right = 1
 and up = 2
 and down = 3
 and data = 4
-
-(* and color = 5 *)
-and size = 6
-and long_size = 6L
+and size = 5
+and long_size = 5L
 
 let insert_horiz_big tab l i =
   let r = tab.{l + right} |> Int64.to_int in
@@ -145,34 +143,6 @@ let count_solutions pb =
     backward arr
   done;
   !cnt
-
-let print :
-    ( int64,
-      Bigarray.int64_elt,
-      Bigarray.c_layout )
-    Bigarray.Array1.t ->
-    unit =
- fun arr ->
-  print_endline "      left rght up   down data";
-  let addr = (Obj.magic arr : int64) in
-  let conv v = Int64.(div (sub v addr) 8L |> to_int) in
-  for i = 0 to Bigarray.Array1.dim arr - 1 do
-    if i mod size = 0 then Printf.printf "%4d: " i;
-    Printf.printf "%4d " (conv arr.{i});
-    if i mod size = size - 1 then print_newline ()
-  done;
-  print_newline ()
-
-let aa pb =
-  let arr = compile_bigarray pb in
-  let addr = (Obj.magic arr : int64) in
-  prepare arr;
-  print arr;
-  forward arr;
-  while not (Int64.equal arr.{down} addr) do
-    print arr;
-    backward arr
-  done
 
 let get_solution pb arr =
   let addr = (Obj.magic arr : int64) in
